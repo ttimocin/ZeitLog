@@ -11,6 +11,8 @@
 
 Tek tuşla işe giriş-çıkış saatlerinizi kaydedin, Firebase'e yedekleyin ve CSV olarak dışa aktarın.
 
+**🌐 Languages / Sprachen:** [🇹🇷 Türkçe](README.md) • [🇬🇧 English](README.en.md) • [🇩🇪 Deutsch](README.de.md)
+
 [Özellikler](#-özellikler) • [Kurulum](#-kurulum) • [Kullanım](#-kullanım) • [Katkıda Bulun](#-katkıda-bulun) • [Lisans](#-lisans)
 
 </div>
@@ -80,8 +82,8 @@ ZeitLog, işe giriş-çıkış saatlerinizi kolayca takip etmenizi sağlayan, **
 
 1. **Repository'yi klonlayın**
    ```bash
-   git clone https://github.com/taytek/zeitlog.git
-   cd zeitlog
+   git clone https://github.com/ttimocin/ZeitLog.git
+   cd ZeitLog
    ```
 
 2. **Bağımlılıkları yükleyin**
@@ -180,7 +182,7 @@ ZeitLog, işe giriş-çıkış saatlerinizi kolayca takip etmenizi sağlayan, **
 ## 📁 Proje Yapısı
 
 ```
-zeitlog/
+ZeitLog/
 ├── app/                      # Expo Router sayfaları
 │   ├── (tabs)/              # Tab navigation
 │   │   ├── index.tsx        # Ana kayıt ekranı
@@ -277,7 +279,7 @@ Katkılarınızı bekliyoruz! Lütfen şu adımları izleyin:
 
 ## 🐛 Hata Bildirimi
 
-Bir hata bulduysanız, lütfen [Issues](https://github.com/taytek/zeitlog/issues) sayfasında bildirin. Mümkün olduğunca detaylı bilgi verin:
+Bir hata bulduysanız, lütfen [Issues](https://github.com/ttimocin/ZeitLog/issues) sayfasında bildirin. Mümkün olduğunca detaylı bilgi verin:
 
 - Uygulama versiyonu
 - Cihaz ve işletim sistemi
@@ -298,7 +300,7 @@ Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır. Bu, projeyi özgü
 
 **TayTek**
 
-- GitHub: [@taytek](https://github.com/taytek)
+- GitHub: [@ttimocin](https://github.com/ttimocin)
 
 ---
 
