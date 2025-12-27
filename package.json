@@ -5,7 +5,7 @@
   "main": "expo-router/entry",
   "repository": {
     "type": "git",
-    "url": "https://github.com/taytek/zeitlog.git"
+    "url": "https://github.com/ttimocin/ZeitLog.git"
   },
   "keywords": [
     "react-native",
@@ -39,12 +39,14 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "expo": "~54.0.30",
+    "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.12",
     "expo-document-picker": "^14.0.8",
     "expo-file-system": "^19.0.21",
     "expo-font": "~14.0.10",
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
+    "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.11",
     "expo-localization": "^17.0.8",
     "expo-notifications": "^0.32.15",

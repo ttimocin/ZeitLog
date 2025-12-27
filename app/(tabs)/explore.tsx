@@ -386,19 +386,39 @@ export default function RecordsScreen() {
   
   const styles = createStyles(isDark);
   
+  // Saat renklendirmesi - geç kalma veya erken çıkış kontrolü
+  const getTimeColor = (time: string | null, type: 'giris' | 'cikis'): string => {
+    if (!time) return isDark ? '#999' : '#ccc';
+    
+    const [hours, minutes] = time.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes;
+    
+    if (type === 'giris') {
+      // 08:00'dan sonra giriş = geç kalma (kırmızı)
+      if (totalMinutes > 8 * 60) return '#ef4444';
+      // Normal giriş (yeşil)
+      if (totalMinutes >= 7 * 60 && totalMinutes <= 8 * 60) return '#10b981';
+    } else {
+      // 17:00'dan önce çıkış = erken çıkış (kırmızı)
+      if (totalMinutes < 17 * 60) return '#ef4444';
+      // Normal çıkış (yeşil)
+      if (totalMinutes >= 17 * 60 && totalMinutes <= 18 * 60) return '#10b981';
+    }
+    
+    // Nötr renk
+    return isDark ? '#e5e5e5' : '#1a1a1a';
+  };
+
   const renderWeekCard = (week: WeekData) => (
     <View key={week.weekStart} style={[styles.weekCard, week.isCurrentWeek && styles.currentWeekCard]}>
       <View style={styles.weekHeader}>
         <Text style={styles.weekLabel}>{week.weekLabel}</Text>
         <View style={styles.weekTotalContainer}>
-          <View style={styles.weekTotal}>
-            <Text style={styles.weekTotalLabel}>{i18n.t('total')}</Text>
-            <Text style={styles.weekTotalValue}>{week.totalText}</Text>
-          </View>
+          <Text style={styles.weekTotalValue}>{week.totalText}</Text>
           {week.totalMinutes > 0 && (
             <Text style={[
               styles.weekTotalOvertime,
-              week.totalOvertime >= 0 ? styles.overtimeTextPositive : styles.overtimeTextNegative
+              week.totalOvertime >= 0 ? styles.weekOvertimePositive : styles.weekOvertimeNegative
             ]}>
               {week.totalOvertimeText} {i18n.t('minuteShort')}
             </Text>
@@ -406,108 +426,121 @@ export default function RecordsScreen() {
         </View>
       </View>
       
-      <View style={styles.weekTable}>
-        {/* Header - Gün adları (tıklanabilir) */}
-        <View style={styles.weekTableHeader}>
-          <View style={styles.weekLabelCell} />
-          {week.days.map((day, i) => (
-            <TouchableOpacity 
-              key={i} 
-              style={[styles.weekTableCell, day.isHoliday && styles.holidayCell]}
+      {/* Tablo Başlıkları */}
+      <View style={styles.tableHeader}>
+        <View style={styles.headerDayName}>
+          <Text style={styles.headerText}>Gün</Text>
+        </View>
+        <View style={styles.headerTimeCell}>
+          <Text style={styles.headerText}>{i18n.t('entry')}</Text>
+        </View>
+        <View style={styles.headerTimeCell}>
+          <Text style={styles.headerText}>{i18n.t('exit')}</Text>
+        </View>
+        <View style={styles.headerDurationCell}>
+          <Text style={styles.headerText}>Süre</Text>
+        </View>
+        <View style={styles.headerOvertimeCell}>
+          <Text style={styles.headerText}>±</Text>
+        </View>
+      </View>
+      
+      {/* Günler - Satır bazlı görünüm */}
+      <View style={styles.daysContainer}>
+        {week.days.map((day, i) => {
+          const isLateEntry = day.giris && getTimeColor(day.giris, 'giris') === '#ef4444';
+          const isEarlyExit = day.cikis && getTimeColor(day.cikis, 'cikis') === '#ef4444';
+          
+          return (
+            <TouchableOpacity
+              key={i}
+              style={[
+                styles.dayRow,
+                i < week.days.length - 1 && styles.dayRowBorder,
+                day.isHoliday && styles.holidayRow
+              ]}
               onPress={() => handleDayPress(day)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.weekDayShort, day.isHoliday && styles.holidayText]}>
-                {day.isHoliday ? '🏖️' : day.shortName}
-              </Text>
+              {/* Gün adı - Sol */}
+              <View style={styles.dayNameContainer}>
+                <Text style={styles.dayName}>{day.shortName}</Text>
+                {day.isHoliday && (
+                  <View style={styles.holidayTag}>
+                    <Ionicons name="sunny-outline" size={12} color="#10b981" />
+                  </View>
+                )}
+              </View>
+              
+              {/* Giriş saati */}
+              <View style={styles.timeCell}>
+                {day.giris ? (
+                  <View style={[
+                    styles.timeBadge,
+                    isLateEntry && styles.timeBadgeError,
+                    !isLateEntry && styles.timeBadgeSuccess
+                  ]}>
+                    <Text style={[
+                      styles.timeText,
+                      isLateEntry && styles.timeTextError,
+                      !isLateEntry && styles.timeTextSuccess
+                    ]}>
+                      {day.giris}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.timeEmpty}>-</Text>
+                )}
+              </View>
+              
+              {/* Çıkış saati */}
+              <View style={styles.timeCell}>
+                {day.cikis ? (
+                  <View style={[
+                    styles.timeBadge,
+                    isEarlyExit && styles.timeBadgeError,
+                    !isEarlyExit && styles.timeBadgeSuccess
+                  ]}>
+                    <Text style={[
+                      styles.timeText,
+                      isEarlyExit && styles.timeTextError,
+                      !isEarlyExit && styles.timeTextSuccess
+                    ]}>
+                      {day.cikis}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.timeEmpty}>-</Text>
+                )}
+              </View>
+              
+              {/* Süre */}
+              <View style={styles.durationCell}>
+                <Text style={[
+                  styles.durationText,
+                  day.duration > 0 && styles.durationTextFilled
+                ]}>
+                  {day.durationText}
+                </Text>
+              </View>
+              
+              {/* Fazla/Eksik */}
+              <View style={styles.overtimeCell}>
+                {day.duration > 0 ? (
+                  <Text style={[
+                    styles.overtimeText,
+                    day.overtime > 0 && styles.overtimeTextPositive,
+                    day.overtime < 0 && styles.overtimeTextNegative
+                  ]}>
+                    {day.overtimeText}
+                  </Text>
+                ) : (
+                  <Text style={styles.overtimeEmpty}>-</Text>
+                )}
+              </View>
             </TouchableOpacity>
-          ))}
-        </View>
-        
-        {/* Giriş saatleri */}
-        <View style={styles.weekTableRow}>
-          <View style={styles.weekLabelCell}>
-            <Text style={styles.weekRowLabel}>↓</Text>
-          </View>
-          {week.days.map((day, i) => (
-            <TouchableOpacity 
-              key={i} 
-              style={[styles.weekTableCell, day.isHoliday && styles.holidayCell]}
-              onPress={() => handleDayPress(day)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.weekTime, styles.weekTimeIn, day.isHoliday && styles.holidayTimeText]}>
-                {day.giris || '-'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        {/* Çıkış saatleri */}
-        <View style={styles.weekTableRow}>
-          <View style={styles.weekLabelCell}>
-            <Text style={styles.weekRowLabel}>↑</Text>
-          </View>
-          {week.days.map((day, i) => (
-            <TouchableOpacity 
-              key={i} 
-              style={[styles.weekTableCell, day.isHoliday && styles.holidayCell]}
-              onPress={() => handleDayPress(day)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.weekTime, styles.weekTimeOut, day.isHoliday && styles.holidayTimeText]}>
-                {day.cikis || '-'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        {/* Çalışma süreleri */}
-        <View style={[styles.weekTableRow, styles.weekTableRowBorder]}>
-          <View style={styles.weekLabelCell}>
-            <Text style={styles.weekRowLabel}>⏱</Text>
-          </View>
-          {week.days.map((day, i) => (
-            <TouchableOpacity 
-              key={i} 
-              style={[styles.weekTableCell, day.isHoliday && styles.holidayCell]}
-              onPress={() => handleDayPress(day)}
-              activeOpacity={0.7}
-            >
-              <Text style={[
-                styles.weekDuration,
-                day.duration > 0 && styles.weekDurationFilled,
-                day.isHoliday && styles.holidayTimeText
-              ]}>
-                {day.durationText}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        {/* Fazla/Eksik */}
-        <View style={styles.weekTableRow}>
-          <View style={styles.weekLabelCell}>
-            <Text style={styles.weekRowLabel}>±</Text>
-          </View>
-          {week.days.map((day, i) => (
-            <TouchableOpacity 
-              key={i} 
-              style={[styles.weekTableCell, day.isHoliday && styles.holidayCell]}
-              onPress={() => handleDayPress(day)}
-              activeOpacity={0.7}
-            >
-              <Text style={[
-                styles.weekOvertime,
-                day.overtime > 0 && styles.weekOvertimePositive,
-                day.overtime < 0 && styles.weekOvertimeNegative,
-                day.isHoliday && styles.holidayTimeText
-              ]}>
-                {day.duration > 0 ? day.overtimeText : '-'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+          );
+        })}
       </View>
     </View>
   );
@@ -535,29 +568,33 @@ export default function RecordsScreen() {
       {/* Aksiyon Butonları */}
       <View style={styles.actionsContainer}>
         <TouchableOpacity
-          style={[styles.actionButton, styles.syncButton]}
+          style={styles.actionButton}
           onPress={handleSync}
           disabled={syncing}
         >
-          <Text style={styles.actionIcon}>☁️</Text>
+          <Ionicons 
+            name={syncing ? "cloud-upload" : "cloud-upload-outline"} 
+            size={18} 
+            color={isDark ? '#888' : '#666'} 
+          />
           <Text style={styles.actionText}>
             {syncing ? i18n.t('syncing') : i18n.t('syncronize')}
           </Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[styles.actionButton, styles.exportButton]}
+          style={styles.actionButton}
           onPress={handleExport}
         >
-          <Text style={styles.actionIcon}>📤</Text>
+          <Ionicons name="download-outline" size={18} color={isDark ? '#888' : '#666'} />
           <Text style={styles.actionText}>{i18n.t('downloadCSV')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[styles.actionButton, styles.importButton]}
+          style={styles.actionButton}
           onPress={handleImport}
         >
-          <Text style={styles.actionIcon}>📥</Text>
+          <Ionicons name="document-text-outline" size={18} color={isDark ? '#888' : '#666'} />
           <Text style={styles.actionText}>{i18n.t('importCSV')}</Text>
         </TouchableOpacity>
       </View>
@@ -625,35 +662,26 @@ const createStyles = (isDark: boolean) =>
     actionsContainer: {
       flexDirection: 'row',
       paddingHorizontal: 20,
-      paddingVertical: 10,
-      gap: 8,
+      paddingVertical: 16,
+      gap: 12,
     },
     actionButton: {
       flex: 1,
-      flexDirection: 'column',
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 10,
-      paddingHorizontal: 4,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
       borderRadius: 12,
-      gap: 2,
-    },
-    syncButton: {
-      backgroundColor: isDark ? '#1a4a1a' : '#e8f5e9',
-    },
-    exportButton: {
-      backgroundColor: isDark ? '#1a3a4a' : '#e3f2fd',
-    },
-    importButton: {
-      backgroundColor: isDark ? '#4a3a1a' : '#fff3e0',
-    },
-    actionIcon: {
-      fontSize: 16,
+      gap: 6,
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+      borderWidth: 1,
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
     },
     actionText: {
       fontSize: 12,
-      fontWeight: '600',
-      color: isDark ? '#fff' : '#333',
+      fontWeight: '500',
+      color: isDark ? '#aaa' : '#666',
     },
     emptyContainer: {
       alignItems: 'center',
@@ -679,135 +707,191 @@ const createStyles = (isDark: boolean) =>
     },
     weeklyContent: {
       padding: 20,
-      paddingTop: 10,
+      paddingTop: 16,
     },
     weekCard: {
-      backgroundColor: isDark ? '#1e1e1e' : '#fff',
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 12,
+      backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+      borderRadius: 24,
+      padding: 20,
+      marginBottom: 20,
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
     },
     currentWeekCard: {
-      borderWidth: 2,
-      borderColor: '#4CAF50',
+      borderWidth: 1.5,
+      borderColor: '#10b981',
     },
     weekHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 16,
+      alignItems: 'flex-start',
+      marginBottom: 24,
     },
     weekLabel: {
-      fontSize: 16,
-      fontWeight: '700',
-      color: isDark ? '#fff' : '#333',
+      fontSize: 20,
+      fontWeight: '800',
+      color: isDark ? '#fff' : '#1a1a1a',
+      letterSpacing: -0.5,
     },
     weekTotalContainer: {
       alignItems: 'flex-end',
+      gap: 4,
     },
-    weekTotal: {
+    weekTotalValue: {
+      fontSize: 24,
+      fontWeight: '800',
+      color: '#10b981',
+      letterSpacing: -0.5,
+    },
+    weekTotalOvertime: {
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    weekOvertimePositive: {
+      color: '#10b981',
+    },
+    weekOvertimeNegative: {
+      color: '#ef4444',
+    },
+    // Tablo Başlıkları
+    tableHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 4,
+      marginBottom: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+    },
+    headerDayName: {
+      width: 50,
+    },
+    headerTimeCell: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    headerDurationCell: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    headerOvertimeCell: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    headerText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: isDark ? '#888' : '#999',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    // Günler - Satır bazlı görünüm
+    daysContainer: {
+      gap: 0,
+    },
+    dayRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: 4,
+    },
+    dayRowBorder: {
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+    },
+    holidayRow: {
+      backgroundColor: isDark ? 'rgba(16, 185, 129, 0.08)' : 'rgba(16, 185, 129, 0.04)',
+      borderRadius: 8,
+      marginHorizontal: -4,
+      paddingHorizontal: 8,
+    },
+    dayNameContainer: {
+      width: 50,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
     },
-    weekTotalLabel: {
-      fontSize: 11,
-      color: isDark ? '#888' : '#999',
-    },
-    weekTotalValue: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: '#4CAF50',
-    },
-    weekTotalOvertime: {
-      fontSize: 12,
+    dayName: {
+      fontSize: 14,
       fontWeight: '600',
-      marginTop: 2,
+      color: isDark ? '#e5e5e5' : '#1a1a1a',
     },
-    overtimeTextPositive: {
-      color: '#4CAF50',
+    holidayTag: {
+      width: 18,
+      height: 18,
+      borderRadius: 9,
+      backgroundColor: isDark ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
-    overtimeTextNegative: {
-      color: '#f44336',
-    },
-    weekTable: {
-      backgroundColor: isDark ? '#2a2a2a' : '#f8f8f8',
-      borderRadius: 12,
-      overflow: 'hidden',
-    },
-    weekTableHeader: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderBottomColor: isDark ? '#333' : '#e0e0e0',
-    },
-    weekTableRow: {
-      flexDirection: 'row',
-    },
-    weekTableRowBorder: {
-      borderTopWidth: 1,
-      borderTopColor: isDark ? '#333' : '#e0e0e0',
-    },
-    weekLabelCell: {
-      width: 28,
-      paddingVertical: 8,
+    timeCell: {
+      flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    weekRowLabel: {
-      fontSize: 12,
-      color: isDark ? '#666' : '#999',
-    },
-    weekTableCell: {
-      flex: 1,
-      paddingVertical: 8,
+    timeBadge: {
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 8,
+      minWidth: 60,
       alignItems: 'center',
     },
-    holidayCell: {
-      backgroundColor: isDark ? '#2d4a2d' : '#e8f5e9',
+    timeBadgeSuccess: {
+      backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)',
     },
-    holidayText: {
-      color: '#4CAF50',
+    timeBadgeError: {
+      backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)',
     },
-    holidayTimeText: {
-      color: isDark ? '#81c784' : '#2e7d32',
-    },
-    weekDayShort: {
-      fontSize: 11,
+    timeText: {
+      fontSize: 13,
       fontWeight: '600',
-      color: isDark ? '#888' : '#666',
     },
-    weekTime: {
-      fontSize: 11,
+    timeTextSuccess: {
+      color: '#10b981',
+    },
+    timeTextError: {
+      color: '#ef4444',
+    },
+    timeEmpty: {
+      fontSize: 13,
+      color: isDark ? '#666' : '#ccc',
+      fontWeight: '400',
+    },
+    durationCell: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    durationText: {
+      fontSize: 13,
       fontWeight: '500',
+      color: isDark ? '#999' : '#aaa',
     },
-    weekTimeIn: {
-      color: '#4CAF50',
-    },
-    weekTimeOut: {
-      color: '#FF5722',
-    },
-    weekDuration: {
-      fontSize: 11,
+    durationTextFilled: {
+      color: isDark ? '#e5e5e5' : '#1a1a1a',
       fontWeight: '600',
-      color: isDark ? '#555' : '#999',
     },
-    weekDurationFilled: {
-      color: isDark ? '#fff' : '#333',
+    overtimeCell: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    weekOvertime: {
-      fontSize: 11,
-      fontWeight: '700',
-      color: isDark ? '#555' : '#999',
+    overtimeText: {
+      fontSize: 13,
+      fontWeight: '600',
     },
-    weekOvertimePositive: {
-      color: '#4CAF50',
+    overtimeTextPositive: {
+      color: '#10b981',
     },
-    weekOvertimeNegative: {
-      color: '#f44336',
+    overtimeTextNegative: {
+      color: '#ef4444',
+    },
+    overtimeEmpty: {
+      fontSize: 13,
+      color: isDark ? '#666' : '#ccc',
+      fontWeight: '400',
     },
   });

@@ -3,10 +3,10 @@ import { useTheme } from '@/context/ThemeContext';
 import i18n from '@/i18n';
 import { syncToFirebase } from '@/services/firebase-sync';
 import {
-    requestNotificationPermissions,
-    setupNotificationChannel,
-    showCheckInNotification,
-    showCheckOutNotification,
+  requestNotificationPermissions,
+  setupNotificationChannel,
+  showCheckInNotification,
+  showCheckOutNotification,
 } from '@/services/notifications';
 import { addRecord, getLastRecord } from '@/services/storage';
 import { WorkRecord } from '@/types';
@@ -14,14 +14,15 @@ import { displayDate, formatDate, formatTime, generateId, getDayName } from '@/u
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -122,7 +123,7 @@ export default function HomeScreen() {
     <View key={`home-${forceUpdate}`} style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerLeft}>
           <Text style={styles.greeting}>{getGreeting()}</Text>
           <Text style={styles.title}>{i18n.t('appTitle')}</Text>
         </View>
@@ -130,9 +131,7 @@ export default function HomeScreen() {
           style={styles.settingsButton} 
           onPress={() => router.push('/settings')}
         >
-          <View style={styles.settingsIconContainer}>
-            <Ionicons name="settings-outline" size={22} color={isDark ? '#fff' : '#333'} />
-          </View>
+          <Ionicons name="settings-outline" size={24} color={isDark ? '#888' : '#666'} />
         </TouchableOpacity>
       </View>
 
@@ -154,7 +153,7 @@ export default function HomeScreen() {
       
       {/* Main Action Button */}
       <View style={styles.buttonContainer}>
-        {/* Work Timer - Giriş yapıldıysa göster */}
+        {/* Work Timer - Giriş yapıldıysa göster (Absolute position) */}
         {workDuration && (
           <View style={styles.timerContainer}>
             <View style={styles.timerBadge}>
@@ -172,31 +171,79 @@ export default function HomeScreen() {
           </View>
         )}
         
-        <TouchableOpacity
-          style={[styles.mainButton, isCheckIn ? styles.checkInButton : styles.checkOutButton]}
-          onPress={handleRecord}
-          disabled={isLoading}
-          activeOpacity={0.85}
-        >
-          <View style={styles.buttonInner}>
-            {isLoading ? (
-              <ActivityIndicator size="large" color="#fff" />
-            ) : (
-              <>
-                <View style={styles.buttonIconContainer}>
-                  <Ionicons 
-                    name={isCheckIn ? "log-in-outline" : "log-out-outline"} 
-                    size={40} 
-                    color="#fff" 
-                  />
+        <View style={styles.buttonWrapper}>
+          {isCheckIn ? (
+            <View style={[styles.mainButtonGradient, styles.greenGlow]}>
+              <LinearGradient
+                colors={['#10b981', '#059669', '#047857']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientInner}
+              >
+              <TouchableOpacity
+                style={styles.mainButton}
+                onPress={handleRecord}
+                disabled={isLoading}
+                activeOpacity={0.9}
+              >
+                <View style={styles.buttonInner}>
+                  {isLoading ? (
+                    <ActivityIndicator size="large" color="#fff" />
+                  ) : (
+                    <>
+                      <View style={styles.buttonIconContainer}>
+                        <Ionicons 
+                          name="log-in-outline" 
+                          size={42} 
+                          color="#fff" 
+                        />
+                      </View>
+                      <Text style={styles.buttonText}>
+                        {i18n.t('checkIn')}
+                      </Text>
+                    </>
+                  )}
                 </View>
-                <Text style={styles.buttonText}>
-                  {isCheckIn ? i18n.t('checkIn') : i18n.t('checkOut')}
-                </Text>
-              </>
-            )}
-          </View>
-        </TouchableOpacity>
+              </TouchableOpacity>
+              </LinearGradient>
+            </View>
+          ) : (
+            <View style={[styles.mainButtonGradient, styles.orangeGlow]}>
+              <LinearGradient
+                colors={['#f97316', '#ea580c', '#c2410c']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientInner}
+              >
+              <TouchableOpacity
+                style={styles.mainButton}
+                onPress={handleRecord}
+                disabled={isLoading}
+                activeOpacity={0.9}
+              >
+                <View style={styles.buttonInner}>
+                  {isLoading ? (
+                    <ActivityIndicator size="large" color="#fff" />
+                  ) : (
+                    <>
+                      <View style={styles.buttonIconContainer}>
+                        <Ionicons 
+                          name="log-out-outline" 
+                          size={42} 
+                          color="#fff" 
+                        />
+                      </View>
+                      <Text style={styles.buttonText}>
+                        {i18n.t('checkOut')}
+                      </Text>
+                    </>
+                  )}
+                </View>
+              </TouchableOpacity>
+              </LinearGradient>
+            </View>
+          )}
+        </View>
         
         {!workDuration && (
           <Text style={styles.tapHint}>{i18n.t('tapToRecord')}</Text>
@@ -222,50 +269,44 @@ const createStyles = (isDark: boolean) =>
     },
     header: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'space-between',
       paddingTop: 12,
       paddingBottom: 8,
       paddingHorizontal: 20,
     },
+    headerLeft: {
+      flex: 1,
+    },
     greeting: {
-      fontSize: 14,
-      color: isDark ? '#888' : '#666',
-      marginBottom: 2,
+      fontSize: 15,
+      color: isDark ? '#999' : '#888',
+      marginBottom: 4,
+      fontWeight: '400',
     },
     title: {
-      fontSize: 28,
-      fontWeight: '700',
+      fontSize: 32,
+      fontWeight: '800',
       color: isDark ? '#fff' : '#1a1a2e',
-      letterSpacing: -0.5,
+      letterSpacing: -0.8,
     },
     settingsButton: {
-      padding: 4,
-    },
-    settingsIconContainer: {
-      width: 40,
-      height: 40,
-      borderRadius: 12,
-      backgroundColor: isDark ? '#1a1a1a' : '#fff',
-      justifyContent: 'center',
-      alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
-      elevation: 3,
+      padding: 8,
+      marginTop: 4,
     },
     timeCard: {
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 24,
+      paddingVertical: 12,
       paddingHorizontal: 20,
+      paddingTop: 4,
     },
     clock: {
-      fontSize: 72,
-      fontWeight: '200',
+      fontSize: 96,
+      fontWeight: '700',
       color: isDark ? '#fff' : '#1a1a2e',
-      letterSpacing: -2,
+      letterSpacing: -3,
+      fontFamily: 'System',
     },
     dateRow: {
       flexDirection: 'row',
@@ -289,7 +330,8 @@ const createStyles = (isDark: boolean) =>
     },
     dateText: {
       fontSize: 15,
-      color: isDark ? '#888' : '#666',
+      color: isDark ? '#999' : '#aaa',
+      fontWeight: '400',
     },
     buttonContainer: {
       flex: 1,
@@ -297,10 +339,15 @@ const createStyles = (isDark: boolean) =>
       alignItems: 'center',
       paddingHorizontal: 40,
       paddingBottom: 40,
+      position: 'relative',
     },
     timerContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
       alignItems: 'center',
-      marginBottom: 24,
+      paddingTop: 20,
     },
     timerBadge: {
       flexDirection: 'row',
@@ -333,40 +380,63 @@ const createStyles = (isDark: boolean) =>
       color: isDark ? '#666' : '#999',
       marginTop: 4,
     },
-    mainButton: {
-      width: 180,
-      height: 180,
-      borderRadius: 90,
+    buttonWrapper: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    mainButtonGradient: {
+      width: 200,
+      height: 200,
+      borderRadius: 100,
       justifyContent: 'center',
       alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 12 },
-      shadowOpacity: 0.25,
-      shadowRadius: 20,
+    },
+    gradientInner: {
+      width: 200,
+      height: 200,
+      borderRadius: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    greenGlow: {
+      shadowColor: '#10b981',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.5,
+      shadowRadius: 24,
       elevation: 15,
+    },
+    orangeGlow: {
+      shadowColor: '#f97316',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.5,
+      shadowRadius: 24,
+      elevation: 15,
+    },
+    mainButton: {
+      width: 200,
+      height: 200,
+      borderRadius: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     buttonInner: {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    checkInButton: {
-      backgroundColor: '#22c55e',
-    },
-    checkOutButton: {
-      backgroundColor: '#f97316',
-    },
     buttonIconContainer: {
-      marginBottom: 8,
+      marginBottom: 10,
     },
     buttonText: {
-      fontSize: 18,
+      fontSize: 20,
       fontWeight: '700',
       color: '#fff',
-      letterSpacing: 1,
+      letterSpacing: 0.5,
     },
     tapHint: {
-      marginTop: 16,
+      marginTop: 20,
       fontSize: 13,
-      color: isDark ? '#555' : '#999',
+      color: isDark ? '#888' : '#aaa',
+      fontWeight: '300',
+      letterSpacing: 0.3,
     },
   });

@@ -223,6 +223,13 @@ ZeitLog/
 - **Veri Doğrulama**: Tüm veriler format kontrolünden geçer
 - **Gizlilik**: Hiçbir veri üçüncü taraflarla paylaşılmaz
 
+## 📄 Yasal Belgeler
+
+- **Gizlilik Politikası**: [Web Versiyonu](https://ttimocin.github.io/ZeitLog/privacy-policy.html) | [Uygulama İçi](app/privacy-policy.tsx)
+- **Kullanım Koşulları**: [Web Versiyonu](https://ttimocin.github.io/ZeitLog/terms-of-service.html) | [Uygulama İçi](app/terms-of-service.tsx)
+
+> **Not**: GitHub Pages kurulumu için `docs/README.md` dosyasına bakın.
+
 ---
 
 ## 📦 APK Oluşturma

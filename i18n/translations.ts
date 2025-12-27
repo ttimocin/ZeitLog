@@ -126,6 +126,11 @@ export const translations = {
     removeHoliday: 'Tatil Kaldır',
     removeHolidayConfirm: 'Bu günün tatil kaydını kaldırmak ister misiniz?',
     remove: 'Kaldır',
+    
+    // Legal
+    privacyPolicy: 'Gizlilik Politikası',
+    termsOfService: 'Kullanım Koşulları',
+    lastUpdated: 'Son Güncelleme',
   },
   
   en: {
@@ -255,6 +260,11 @@ export const translations = {
     removeHoliday: 'Remove Holiday',
     removeHolidayConfirm: 'Do you want to remove the holiday record for this day?',
     remove: 'Remove',
+    
+    // Legal
+    privacyPolicy: 'Privacy Policy',
+    termsOfService: 'Terms of Service',
+    lastUpdated: 'Last Updated',
   },
   
   de: {
@@ -384,10 +394,16 @@ export const translations = {
     removeHoliday: 'Urlaub entfernen',
     removeHolidayConfirm: 'Möchten Sie den Urlaubseintrag für diesen Tag entfernen?',
     remove: 'Entfernen',
+    
+    // Legal
+    privacyPolicy: 'Datenschutzerklärung',
+    termsOfService: 'Nutzungsbedingungen',
+    lastUpdated: 'Zuletzt aktualisiert',
   },
 };
 
 export type TranslationKey = keyof typeof translations.tr;
+
 
 
 

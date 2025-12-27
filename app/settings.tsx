@@ -172,7 +172,7 @@ export default function SettingsScreen() {
             style={styles.linkButton}
             onPress={async () => {
               try {
-                await Linking.openURL('https://github.com/taytek');
+                await Linking.openURL('https://github.com/ttimocin/ZeitLog');
               } catch (error) {
                 console.error('GitHub linki açılırken hata:', error);
               }
@@ -180,6 +180,22 @@ export default function SettingsScreen() {
           >
             <Ionicons name="logo-github" size={20} color={isDark ? '#fff' : '#333'} />
             <Text style={styles.linkText}>GitHub</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.linkButton}
+            onPress={() => router.push('/privacy-policy')}
+          >
+            <Ionicons name="shield-checkmark-outline" size={20} color={isDark ? '#fff' : '#333'} />
+            <Text style={styles.linkText}>{i18n.t('privacyPolicy')}</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.linkButton}
+            onPress={() => router.push('/terms-of-service')}
+          >
+            <Ionicons name="document-text-outline" size={20} color={isDark ? '#fff' : '#333'} />
+            <Text style={styles.linkText}>{i18n.t('termsOfService')}</Text>
           </TouchableOpacity>
         </View>
 
